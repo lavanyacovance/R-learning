@@ -1,0 +1,261 @@
+---
+title: "Survival analysis in R"
+author: "Lavanya"
+date: "2025-05-02"
+output: html_document
+---
+
+
+## Survival analysis
+Survival analysis consists of statistical methods that help us understand and predict how long it takes for an event to occur. These methods help researchers analyze time-to-event data
+
+
+In the medical world, we typically think of survival analysis literally – tracking time until death. But, it’s more general than that – survival analysis models time until an event occurs (any event). This might be death of a biological organism. But it could also be the time until a hardware failure in a mechanical system, time until recovery, time someone remains unemployed after losing a job, time until a ripe tomato is eaten by a grazing deer, time until someone falls asleep in a workshop, etc. Survival analysis also goes by reliability theory in engineering, duration analysis in economics, and event history analysis in sociology.
+
+## Main Objectives of Survival Analysis
+
+1.Estimate and interpret survival and hazard functions from time-to-event data.
+
+2.Compare survival or hazard functions between different groups or conditions.
+
+3.Evaluate how explanatory variables (like age, treatment, or risk factors) influence survival time.
+
+## Why R
+
+1. Open Source and Cost-Effective
+2. Superior Visualization and Reporting
+3. Rapid Innovation and Package Ecosystem
+4. Interactive Reporting and Dashboards
+
+## Methods used to do survival analysis in R
+
+There are two methods that can be used to perform survival analysis in R 
+
+-Kaplan-Meier method
+
+-Cox Proportional hazard model
+
+## to load reqired libraries 
+
+
+```{r setup, include=FALSE}
+
+library(survival)    # Core survival analysis functions
+library(ggplot2)    # For data visualization
+library(survminer)  # For enhanced survival plots
+library(dplyr) # data manipulations
+```
+
+## About lung data set
+
+the lung dataset available from the survival package survival. The data contain subjects with advanced lung cancer from the North Central Cancer Treatment Group. It includes the 10 following variables:
+
+inst:  Institution code
+
+time:  Survival time in days
+
+status:  censoring status 1=censored, 2=dead
+
+age:  Age in years
+
+sex:  Male=1 Female=2
+
+ph.ecog:  ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed <50% of the day, 3= in bed > 50% of the day but not bedbound, 4 = bedbound
+
+ph.karno:  Karnofsky performance score (bad=0-good=100) rated by physician
+
+pat.karno:  Karnofsky performance score (0 = bad, 100 = good) as rated by patient
+
+meal.cal:  Calories consumed at meals
+
+wt.loss:  Weight loss in last six months
+
+ 
+
+```{r,echo=FALSE}
+DT::datatable(lung,
+              options = list(
+                scrollX = TRUE,
+                 pageLength = 5,
+                lengthMenu = c(5, 10, 15, 20)
+              ))
+```
+
+## creation of Survival object 
+
+## Survival Object
+
+  -   "survival object" is created using the Surv function from the survival package. This object is used to represent survival data, It typically takes two main arguments , which includes information about the time until an event occurs (such as death, relapse, or failure) and the event status (whether the event has occurred or not).
+  
+
+the Surv() function will, by default, treat non-zero values as events, and zero as censored.If your variable status has values like 1 = censored, 2 = event (as is common in clinical trial data), then:will treat both 1 and 2 as events, which is wrong in that context.
+  
+ 
+  - Syntax for Surv function 
+[link](https://stat.ethz.ch/R-manual/R-devel/library/survival/html/Surv.html)
+
+```{r}
+
+lungs <- survival::lung
+
+surv_obj = Surv( time= lungs$time, event = lungs$status == 2)
+
+print(surv_obj)
+
+```
+
+in the results plus (+) symbol, which indicates censored observations
+
+
+![Proc life test in SAS](C:/Users/a076924/OneDrive - Syneos Health/Desktop/Survival analysis in r/life_test.png)
+
+
+
+## create surival probality
+The survfit() function in R is part of the survival package, and it's used to estimate survival probabilities from a survival object—typically created with the Surv() function.
+it creates survival curves and prints the number of values, number of events(people suffering from cancer), the median time and 95% confidence interval.
+
+## create survival statistics
+
+```{r}
+surv_fit=survfit(surv_obj~1,data=lungs)
+
+print(surv_fit)
+
+surv_fit_by=survfit(surv_obj~sex,data=lungs)
+
+print(surv_fit_by)
+
+surv_fit_by2=survfit(surv_obj~sex+ph.ecog,data=lungs)
+
+print(surv_fit_by2)
+```
+
+## survival statistics SAS vs R
+
+There are several ways to compute confidence intervals (CI) for survival curves. 
+- The default confidence interval method in s’s survfit() is "log"
+- The default confidence interval method in R’s survfit() is "log-log"
+
+-to Produced the same results as SAS
+survfit(surv.obj ~ 1, conf.type = "log-log") 
+
+```{r}
+surv_fit=survfit(surv_obj~1,data=lung)
+
+print(surv_fit)
+
+surv_fit1=survfit(surv_obj~1,data=lung,conf.type = "log-log")
+print(surv_fit1)
+
+```
+
+
+## create summmary of survival statics at each timepoint
+
+```{r}
+evnt_sum<-surv_summary(surv_fit,data=lungs)
+
+print(head(evnt_sum,n=5))
+
+```
+
+
+
+## survdiff (log-rank p value)
+```{r}
+survdiff(surv_obj~sex,data=lungs)
+
+```
+
+
+## Kaplan-Meier using ggsurvplot from survminer ackage
+ KM Plot is a widely used data visualization method for survival analysis.
+
+```{r}
+
+plot(surv_fit)
+
+```
+
+
+
+```{r}
+ggsurvplot(surv_fit_by,
+           title='Overall Survival Curve',
+           xlab='Time (days)',
+           ylab='Survival Probability',
+           pval.method=TRUE ,
+           pval = TRUE,
+           surv.median.line="hv",
+           legend.title='Sex',
+               legend.labs=c('Male' , 'Female'),
+           conf.int=TRUE, #shaded confidence intervals (usually 95%) around                                  the survival curves
+           risk.table=TRUE,#Displays the number of subjects at risk at                                    different time points below the plot.
+           font.title=c(16,"bold"), #font of plot elements
+           font.x=c(14), #font size for the x- and y-axis labels
+           font.y=c(14),
+           font.tickslab=c(12), #font size of the axis tick labels  
+             
+     surv.plot.height=0.7,# Adjust spacing and proportions
+     # Controls the relative height of the survival plot area  (above the risk table).
+    # Example: If total height is 1, this means 70% is for the survival plot.
+      risk.table.height = 0.3)
+  # Controls the relative height of the risk table area.
+#Together with: surv.plot.height + risk.table.height should ideally equal 1 (though not strictly enforced).
+
+#This means the risk table will take 30% of the plot area.
+
+
+```
+
+
+## Hazard ratio
+
+coxph() function from survival package can be used to compute Hazard ratio.
+A hazard ratio (HR) is the probability of an event in a treatment group relative to the control group probability over a unit of time. 
+
+HR = 1: No effect
+HR < 1: Reduction in the hazard
+HR > 1: Increase in Hazard
+
+## Cox Regression Handling R vs sas
+The default methods for handling ties in a Cox regression model are different which can lead to a different result for the Hazard ratio and associated confidence interval.
+
+-R uses “efron” by default. 
+-SAS uses “breslow” by default. 
+
+```{r fig-only, warning=FALSE, message=FALSE}
+hr=coxph(surv_obj~sex+age+ph.ecog,data=lungs)
+hr1=coxph(surv_obj~sex+age+ph.ecog+age*sex,data=lungs)
+summary(hr)
+
+hr=coxph(surv_obj~sex+age+ph.ecog,ties = "breslow",data=lungs)
+summary(hr)
+
+```
+
+## HR by refernce 
+lowest numeric or alphabetical value is taken as the reference.
+HR=Hazard(female)/Hazard(male )
+- to change the refernce group
+
+![female as refernce](C:/Users/a076924/OneDrive - Syneos Health/Desktop/Survival analysis in r/phreg.png)
+Now the HR will be:
+
+HR=Hazard(Male)/Hazard(Female)
+
+## in R to change the refernce
+
+```{r}
+lungs$sex <- factor(lungs$sex, levels = c(1, 2),
+                    labels = c("Male","Female"))
+
+lungs$sex <- relevel(lungs$sex, ref = "Female")
+
+hr_fr=coxph(Surv(time, status) ~ sex + age+ph.ecog, data = lungs)
+
+summary(hr_fr)
+
+
+```
