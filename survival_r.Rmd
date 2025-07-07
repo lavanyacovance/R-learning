@@ -134,8 +134,8 @@ print(surv_fit_by2)
 ## survival statistics SAS vs R
 
 There are several ways to compute confidence intervals (CI) for survival curves. 
-- The default confidence interval method in s’s survfit() is "log"
-- The default confidence interval method in R’s survfit() is "log-log"
+- The default confidence interval method in s’s survfit() is "log-log"
+- The default confidence interval method in R’s survfit() is "log"
 
 -to Produced the same results as SAS
 survfit(surv.obj ~ 1, conf.type = "log-log") 
