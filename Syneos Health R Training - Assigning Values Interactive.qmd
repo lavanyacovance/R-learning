@@ -1,0 +1,651 @@
+---
+title: "Syneos Health R Training"
+subtitle: "Assigning Values, Vectors, Logical Tests, and Boolean Operators"
+date: 18JUL2024
+output: 
+  html_document:
+    toc: true
+    df-print: paged
+knitr:
+  opts_chunk: 
+    echo: true
+title-block-banner: "#EB3300"
+title-block-banner-color: "white"
+runtime: shiny
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(dplyr)
+library(shiny)
+library(shinyAce)
+
+```
+
+# Welcome
+
+In this tutorial, we will cover the basics of assigning values, logical tests and boolean operators in R. By the end of this tutorial you will be able to:
+
+1.  Save values to use later
+2.  Use multiple values together
+3.  Overwrite values
+4.  Use and create vectors
+5.  Identify and use logical tests
+6.  Identify and use boolean operators
+
+# Assigning Objects
+
+## Intro
+
+### Euler's Number
+
+For many of us, we recognize Euler's number simply as 'e' in many mathematics equations. Euler's number appears often in calculations. Since it has a lot of digits, it is difficult to write every time you need to use it.
+
+Euler's number is approximately 2.718282.
+
+Instead of having to write this every time we use it, we can assign this value to an object in R for later use.
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+    mainPanel(
+      h4("Try it out:"),
+      aceEditor("code", mode = "r", theme = "github", value = "e <- 2.718282\ne", height = "100px"),
+      actionButton("run1", "Run Code"),
+      verbatimTextOutput("codeOutput")
+    )
+  ),
+  server = function(input, output, session) {
+    observeEvent(input$run1, {
+      req(input$code)
+      # Split the code into lines
+      code_lines <- unlist(strsplit(input$code, "\n"))
+
+      # Use a reactive value to accumulate outputs
+      outputs <- reactiveValues(all_outputs = "")
+
+      # Evaluate each line of code and capture the output
+      for (line in code_lines) {
+        tryCatch({
+          # Execute each line and capture output
+          output_line <- capture.output(eval(parse(text = line)))
+          if (length(output_line) > 0) {
+            # Append captured output to the reactive value
+            outputs$all_outputs <- paste(outputs$all_outputs, output_line, sep = "\n")
+          }
+        }, error = function(e) {
+          # Append error message to the outputs
+          outputs$all_outputs <- paste(outputs$all_outputs, "Error:", e$message, sep = "\n")
+        })
+      }
+
+      # Render all collected outputs
+      output$codeOutput <- renderPrint({
+        if (nzchar(outputs$all_outputs)) {
+          cat(outputs$all_outputs)
+        } else {
+          cat("No visible output.")
+        }
+      })
+    })
+  }
+)
+```
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+    mainPanel(
+      h4("Try it out:"),
+      aceEditor("code", mode = "r", theme = "github", value = "e = 2.718282\ne", height = "100px"),
+      actionButton("run1", "Run Code"),
+      verbatimTextOutput("codeOutput")
+    )
+  ),
+  server = function(input, output, session) {
+    observeEvent(input$run1, {
+      req(input$code)
+      # Split the code into lines
+      code_lines <- unlist(strsplit(input$code, "\n"))
+
+      # Use a reactive value to accumulate outputs
+      outputs <- reactiveValues(all_outputs = "")
+
+      # Evaluate each line of code and capture the output
+      for (line in code_lines) {
+        tryCatch({
+          # Execute each line and capture output
+          output_line <- capture.output(eval(parse(text = line)))
+          if (length(output_line) > 0) {
+            # Append captured output to the reactive value
+            outputs$all_outputs <- paste(outputs$all_outputs, output_line, sep = "\n")
+          }
+        }, error = function(e) {
+          # Append error message to the outputs
+          outputs$all_outputs <- paste(outputs$all_outputs, "Error:", e$message, sep = "\n")
+        })
+      }
+
+      # Render all collected outputs
+      output$codeOutput <- renderPrint({
+        if (nzchar(outputs$all_outputs)) {
+          cat(outputs$all_outputs)
+        } else {
+          cat("No visible output.")
+        }
+      })
+    })
+  }
+)
+```
+
+
+
+To assign 2.718282 to `e` in R, we use this syntax:
+
+```{r}
+e <- 2.718282
+```
+
+`<-` is R's assignment operator. This can be written by:
+
+1.  a less than sign `<`, followed by
+2.  a minus sign `-`
+
+This combination looks like an arrow. It creates a new variable that has the name of the new variable on the left, and the value of it on the right.
+
+BEWARE! Make sure you watch the spaces. The assignment operator `<-` does not have any spaces in between.
+
+Take a look at the code chunk below. It gives us an error since there are spaces between the `< -`.
+
+```{r}
+e < - 2.718282
+```
+
+The SAS equivalent would look like:
+
+e = 2.718282;
+
+Now that we have `e` saved. We can use it to our hearts desire in the future!
+
+Here are some examples:
+
+```{r}
+1+e
+
+e*2
+
+log(e)
+```
+
+You might of noticed that `log(e)` returned a value of `1`. This is because in R, `log()` computes the natural logarithm by default. To compute using base 10, you can use `log10()`. For binary logarithms, use \`log2()'.
+
+## Multiple objects
+
+A lot of the time in our work, we use multiple variables to get us an end result.
+
+Take BMI for example. We will need `height` and `weight` to calculate a BMI.
+
+The BMI formula is weight (kg) divided by the height (m) squared.
+
+```{r}
+weight <- 60
+height <- 1.52
+
+bmi <- weight/(height^2)
+bmi
+```
+
+You can see from this example that we can use multiple objects to create a new object.
+
+## Overwriting objects
+
+In the below example, what do you think "name" will return?
+
+```{r}
+name <- "Syneos"
+name <- "Health"
+```
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+  
+  # Create a sidebar layout with input and output definitions
+  mainPanel(
+      # Add a multiple choice question
+      radioButtons("question", "Select one:",
+                   choices = list('"Syneos"' = "syneos",
+                                  '"Health"' = "health",
+                                  "An error" = "error")),
+      actionButton("submit", "Submit Answer"),
+    
+      # Display the selected answer
+      textOutput("answer")
+    )
+  
+),
+  server = function(input, output, session) {
+  # Observe the button click event
+  observeEvent(input$submit, {
+    # React based on the selected answer
+    if (input$question == "health") {
+      result <- "Correct! The value of the object name is overwritten by the 2nd statement."
+    } else {
+      result <- "Incorrect, please try again."
+    }
+    output$answer <- renderText(result)
+  })
+}
+)
+
+```
+
+```{r}
+name
+```
+
+We can overwrite the value of a variable by simply reassigning it.
+
+Will the below reassign `name`?
+
+```{r}
+name <- "Syneos"
+Name <- "Health"
+```
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+  
+  # Create a sidebar layout with input and output definitions
+  mainPanel(
+      # Add a multiple choice question
+      radioButtons("question", "Select one:",
+                   choices = list('Yes' = "Ans1",
+                                  'No' = "Ans2")),
+      actionButton("submit", "Submit Answer"),
+    
+      # Display the selected answer
+      textOutput("answer")
+    )
+  
+),
+  server = function(input, output, session) {
+  # Observe the button click event
+  observeEvent(input$submit, {
+    # React based on the selected answer
+    if (input$question == "Ans2") {
+      result <- "Correct! R object names are case sensitive, 2 objects are created 'name' and 'Name'."
+    } else {
+      result <- "Incorrect, please try again."
+    }
+    output$answer <- renderText(result)
+  })
+}
+)
+
+```
+
+```{r}
+name
+```
+
+R object names are **case sensitive**. Unlike SAS, you will need to be very cognizant of how you name your variables.
+
+Here are some other naming rules in R:
+
+1.  Names cannot being with a number.
+2.  A name cannot contain a special character like `+`, `-`, `/`, `*`, `^`, `%`, `!`, `"`, `'`. The only exception is `_`, which can be used in a name, but cannot begin with `_`.
+
+## Exercises
+
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 1 through 6.
+
+## Vectors and vector functions
+
+We can combine multiple values into a single vector of data with the c() function. Think of c() as standing for “combine” or “concatenate.”
+
+```{r}
+vector1 <- c(0.7, 8, e, 31)
+vector1
+```
+
+Some functions in R are designed to work on vectors. A vector function takes in a vector and returns a single value. For example, the function mean() reads in a vector and returns one value.
+
+```{r}
+mean(vector1)
+```
+
+What do you think the following code will return?
+
+    sum(vector1)
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+  
+  # Create a sidebar layout with input and output definitions
+  mainPanel(
+      # Add a multiple choice question
+      radioButtons("question", "Select one:",
+                   choices = list('0.700000' = 'ans1',
+                                  '10.60457' = 'ans2',
+                                  '31.00000' = 'ans3',
+                                  '42.41828' = 'ans4')),
+      actionButton("submit", "Submit Answer"),
+    
+      # Display the selected answer
+      textOutput("answer")
+    )
+  
+),
+  server = function(input, output, session) {
+  # Observe the button click event
+  observeEvent(input$submit, {
+    # React based on the selected answer
+    if (input$question == "ans4") {
+      result <- "Correct! sum() is a vector level function and returns the sum of vector."
+    } else {
+      result <- "Incorrect, please try again."
+    }
+    output$answer <- renderText(result)
+  })
+}
+)
+
+```
+
+
+
+```{r}
+sum(vector1)
+```
+
+Other functions in R will work on each value of a vector separately. For example, round() will round each value and return a vector.
+
+```{r}
+round(vector1, digits= 2)
+```
+
+## Indexing Vectors
+
+Indexing lets us retrieve values from a vector. To retrieve a value from a vector:
+
+-   Write the name of the vector
+-   Place square brackets after the name, \[ \]
+-   Place a number between the brackets that identifies the position of the value that you would like to retrieve
+
+```{r}
+vector1[2] 
+```
+
+What do you think the following code will return?
+    
+    vector1[3]
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+  
+  # Create a sidebar layout with input and output definitions
+  mainPanel(
+      # Add a multiple choice question
+      radioButtons("question", "Select one:",
+                   choices = list('0.700000' = 'ans1',
+                                  '8.000000' = 'ans2',
+                                  '2.718282' = 'ans3',
+                                  '31.000000' = 'ans4')),
+           
+      actionButton("submit", "Submit Answer"),
+    
+      # Display the selected answer
+      textOutput("answer")
+    )
+  
+),
+  server = function(input, output, session) {
+  # Observe the button click event
+  observeEvent(input$submit, {
+    # React based on the selected answer
+    if (input$question == "ans3") {
+      result <- "Correct! We are indexing the 3rd value of the vector which is set to the object e (Euler's number)."
+    } else {
+      result <- "Incorrect, please try again."
+    }
+    output$answer <- renderText(result)
+  })
+}
+)
+
+```
+
+
+## Named Vectors
+
+We can name elements of the vector to create a named vector.
+
+```{r}
+shopping <- c('carrots' = 1, 'onions' = 1, 'garlic' = 10, 'ginger' = 0.5, 'spring onions'= 4)
+shopping
+```
+
+We can then index each element by name as well as numeric position.
+
+```{r}
+shopping[2]
+
+shopping['garlic']
+```
+
+## Exercises
+
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 7 through 10.
+
+# Logical tests
+
+Much like in SAS, R has logical operators we can use to manipulate data.
+
+Say we want to find any value in the vector (v) below that is greater than 2.
+
+```{r}
+v <- c(2, 3.5, 4, 9.8, 6, 7.2, 1, 0.5, 1.9, 2.01)
+v
+```
+
+We can use `>` to check what values are greater than 2.
+
+```{r}
+v > 2
+```
+
+This will return a vector of TRUEs and FALSEs based on if the value in the vector is greater than 2.
+
+We can also work use logical operators with strings.
+
+```{r}
+#| include: false
+domains <- c('DM', 'CM', 'AE', 'LB', 'VS', 'SV', 'SE', 'TA', 'TV', 'TE')
+```
+
+`domains` is a vector of common SDTM domains.
+
+```{r}
+domains
+```
+
+We can use logical operators to test for "VS".
+
+```{r}
+domains == "VS"
+```
+
+Operators like greater than or less than work with strings. Let's see how.
+
+```{r}
+domains < "CM"
+```
+
+This returns a vector of TRUEs and FALSEs based on if "CM" comes before the values of `domains` in alphabetical order.
+
+```{r}
+domains > "LB"
+```
+
+This returns a vector of TRUEs and FALSEs based on if the values of `domains` comes after "LB" in alphabetical order.
+
+## Operators
+
+The following are the other logical operators:
+
+| **Operator** |          **Description** |
+|--------------|-------------------------:|
+| `>`          |             Greater than |
+| `>=`         | Greater than or equal to |
+| `<`          |                Less than |
+| `<=`         |    Less than or equal to |
+| `==`         |                 Equal to |
+| `!=`         |             Not equal to |
+
+**Note** Unlike SAS where you use a single `=` to see if something is equal, in R you must use double equal signs (`==`).
+
+As a general rule, if you are setting something equal to a value in R, then you use `=`. Else if you are seeing if something is equal to a value, then you use `==`.
+
+## Exercises
+
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 11 through 14.
+
+# Boolean Operators
+
+With logical operators above, we have only been able to use one operator at a time.
+
+In our work we often use multiple logical operators at a time to subset data. With boolean operators, we can do this in R!
+
+## Operators
+
+Below is a table of boolean operators in R:
+
+| **Operator** | **Description** |
+|--------------|----------------:|
+| `|`          |              OR |
+| `&`          |             AND |
+| `!`          |             NOT |
+
+In R, you must use the operator syntax. Unlike SAS, you cannot use the verbiage "or" or "and" to subset data in R.
+
+```{r}
+#| include: false
+glucose <- c(106, 133, 114, 99, 140, 175, 178, 201, 183, 207)
+```
+
+The vector `glucose` has blood sugar readings over a 8 hour span.
+
+```{r}
+glucose
+```
+
+We can use boolean operators to subset the data.
+
+```{r}
+glucose < 200 & glucose > 100
+```
+
+```{r}
+glucose >= 140 | glucose < 100
+```
+
+The most common way to use the operator, **!**, is by checking if one value does not equal another.
+
+```{r}
+glucose != 99
+```
+
+**!** will reverse any test. For example, what will `!FALSE` return?
+
+```{r echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+  
+  # Create a sidebar layout with input and output definitions
+  mainPanel(
+      # Add a multiple choice question
+      radioButtons("question", "Select one:",
+                   choices = list('FALSE' = 'ans1',
+                                  'TRUE' = 'ans2',
+                                  'An Error' = 'ans3')),
+           
+      actionButton("submit", "Submit Answer"),
+    
+      # Display the selected answer
+      textOutput("answer")
+    )
+  
+),
+  server = function(input, output, session) {
+  # Observe the button click event
+  observeEvent(input$submit, {
+    # React based on the selected answer
+    if (input$question == "ans2") {
+      result <- "Correct! TRUE is the reverse of FALSE."
+    } else {
+      result <- "Incorrect, please try again."
+    }
+    output$answer <- renderText(result)
+  })
+}
+)
+
+```
+
+```{r}
+!FALSE
+```
+
+**Note** Unlike SAS, you cannot do multiple boolean operators on one variable.
+
+For example, if you wanted to find glucose levels that are between 100 and 200...
+
+In SAS --\> 100 \<= glucose \<= 200 In R --\> 100 \<= glucose & glucose \<= 200
+
+### %in%
+
+When you want to test for multiple options, you could use the `|` operator.
+
+```{r}
+#| include: false
+domains <- c('DM', 'CM', 'AE', 'LB', 'VS', 'SV', 'SE', 'TA', 'TV', 'TE')
+```
+
+```{r}
+domains == "TA" | domains == "TV" | domains == "TE"
+```
+
+Doing this can be cumbersome. Instead we can use R's `%in%` operator.
+
+```{r}
+domains %in% c("TA", "TV", "TE")
+```
+
+This is the equivalent to using `in` in SAS (i.e. PARAMCD in ("WEIGHT" "HEIGHT" "BMI")).
+
+## Exercises
+
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 15 through 19.
+
+# Takeaway
+
+In this tutorial, we were introduced to four basic concepts in R: assigning values, vectors, logical operators, and boolean operators. When we assign values, we are creating new variables, or objects in R. R stores these objects so we can use them for later use. We can assign a vector of values to an object, and use functions on them that either return a single value or a vector. Logical operators help us to find data that is relevant. We can use boolean operators to help link multiple logical operators together.
+
+## Recap
+
+1.  We assign objects in R using `<-`
+2.  Once we assign multiple values, we can use them together
+3.  R takes the most recent assignment of an object to use
+4.  Vectors contain multiple values
+5.  Logical tests include operators like `<`, `<=`, `>`, `>=`, `==`, `!=`
+6.  Boolean operators include `|` (or), `&` (and), `!` (not), and `%in%` (in)
+
+## Q&A
+
+If you have any questions, comments or concerns, please reach out to the R Standards Team at [DL_FSO_R_Team\@syneoshealth.com](mailto:DL_FSO_R_Team@syneoshealth.com).
