@@ -1,0 +1,300 @@
+---
+title: "Syneos Health R Training"
+subtitle: "Assigning Values, Logical Tests, and Boolean Operators"
+author: Michelle Page-Lopez
+date: 05JUN2024
+format: 
+  html:
+    toc: true
+    df-print: paged
+knitr:
+  opts_chunk: 
+    echo: true
+title-block-banner: "#EB3300"
+title-block-banner-color: "white"
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(dplyr)
+library(shiny)
+```
+
+# Welcome
+
+In this tutorial, we will cover the basics of assigning values, logical tests and Boolean operators in R. By the end of this tutorial you will be able to:
+
+1.  Save values to use later
+2.  Use multiple values together
+3.  Overwrite values
+4.  Identify and use logical tests
+5.  Identify and use Boolean operators
+
+
+# Assigning Objects
+## Intro
+### Euler's Number
+For many of us, we recognize Euler's number simply as 'e' in many mathematics equations. Euler's number appears often in calculations. Since it has a lot of digits, it is difficult to write every time you need to use it.
+
+Euler's number is approximately 2.718282.
+
+Instead of having to write this every time we use it, we can assign this value to an object in R for later use.
+
+Run the code chunk below to see what happens.  
+
+```{r}
+e <- 2.718282
+e
+
+e = 2.718282
+e
+``` 
+
+
+To assign 2.718282 to `e` in R, we use this syntax:
+```{r}
+e <- 2.718282
+```
+
+`<-` is R's assignment operator. This can be written by:
+
+1. a less than sign `<`, followed by 
+2. a minus sign `-`
+  
+This combination looks like an arrow. It creates a new variable that has the name of the new variable on the left, and the value of it on the right. 
+  
+BEWARE! Make sure you watch the spaces. The assignment operator `<-` does not have any spaces in between.
+
+Take a look at the code chunk below. It gives us an error since there are spaces between the `< -`.
+
+```{r}
+e < - 2.718282
+```
+
+
+The SAS equivalent would look like:
+
+e = 2.718282;
+
+Now that we have `e` saved. We can use it to our hearts desire in the future!
+
+Here are some examples:
+```{r}
+1+e
+
+e*2
+
+log(e)
+```
+You might of noticed that `log(e)` returned a value of `1`. This is because in R, `log()` computes the natural logarithm by default. To compute using base 10, you can use `log10()`. For binary logarithms, use `log2()'.
+
+
+## Multiple objects
+A lot of the time in our work, we use multiple variables to get us an end result. 
+
+Take BMI for example. We will need `height` and `weight` to calculate a BMI. 
+
+The BMI formula is weight (kg) divided by the height (m) squared. 
+
+```{r}
+weight <- 60
+height <- 1.52
+
+bmi <- weight/(height^2)
+bmi
+```
+You can see from this example that we can use multiple objects to create a new object. 
+
+
+## Overwriting objects
+In the below example, what do you think "name" will return?
+
+```{r}
+name <- "Syneos"
+name <- "Health"
+```
+
+```{r}
+name
+```
+We can overwrite the value of a variable by simply reassigning it. 
+
+Will the below reassign `name`?
+```{r}
+name <- "Syneos"
+Name <- "Health"
+```
+
+```{r}
+name
+```
+R object names are **case sensitive**. Unlike SAS, you will need to be very cognizant of how you name your variables.
+
+Here are some other naming rules in R:
+
+1. Names cannot being with a number.
+2. A name cannot contain a special character like `+`, `-`, `/`, `*`, `^`, `%`, `!`, `"`, `'`. The only exception is `_`, which can be used in a name, but cannot begin with `_`.
+  
+  
+## Exercises
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 1 through 6.
+
+
+# Logical tests
+Much like in SAS, R has logical operators we can use to manipulate data. 
+
+Say we want to find any value in the vector (v) below that is greater than 2.
+
+```{r}
+v <- c(2, 3.5, 4, 9.8, 6, 7.2, 1, 0.5, 1.9, 2.01)
+v
+```
+
+We can use `>` to check what values are greater than 2.
+```{r}
+v > 2
+```
+
+
+This will return a vector of TRUEs and FALSEs based on if the value in the vector is greater than 2. 
+
+We can also work use logical operators with strings. 
+```{r}
+#| include: false
+domains <- c('DM', 'CM', 'AE', 'LB', 'VS', 'SV', 'SE', 'TA', 'TV', 'TE')
+```
+
+
+`domains` is a vector of common SDTM domains. 
+```{r}
+domains
+```
+We can use logical operators to test for "VS".
+```{r}
+domains == "VS"
+```
+Operators like greater than or less than work with strings. Let's see how.
+```{r}
+domains < "CM"
+```
+This returns a vector of TRUEs and FALSEs based on if "CM" comes before the values of `domains` in alphabetical order.
+
+```{r}
+domains > "LB"
+```
+This returns a vector of TRUEs and FALSEs based on if the values of `domains` comes after "LB" in alphabetical order.
+
+
+## Operators
+The following are the other logical operators:
+
+**Operator** | **Description**
+-------------|-------------------:
+`>` | Greater than
+`>=` | Greater than or equal to
+`<` | Less than
+`<=` | Less than or equal to
+`==` | Equal to
+`!=` | Not equal to
+
+
+**Note**
+Unlike SAS where you use a single `=` to see if something is equal, in R you must use double equal signs (`==`).
+
+As a general rule, if you are setting something equal to a value in R, then you use `=`. Else if you are seeing if something is equal to a value, then you use `==`.
+
+
+## Exercises
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 7 through 10.
+
+
+# Boolean Operators
+With logical operators above, we have only been able to use one operator at a time.
+
+In our work we often use multiple logical operators at a time to subset data. With Boolean operators, we can do this in R!
+
+## Operators
+Below is a table of Boolean operators in R:
+
+**Operator** | **Description**
+-------------|-------------------:
+`|` | OR
+`&` | AND
+`!` | NOT
+
+In R, you must use the operator syntax. Unlike SAS, you cannot use the verbiage "or" or "and" to subset data in R. 
+
+```{r}
+#| include: false
+glucose <- c(106, 133, 114, 99, 140, 175, 178, 201, 183, 207)
+```
+
+The vector `glucose` has blood sugar readings over a 8 hour span. 
+```{r}
+glucose
+```
+
+We can use Boolean operators to subset the data.
+```{r}
+glucose < 200 & glucose > 100
+```
+
+```{r}
+glucose >= 140 | glucose < 100
+```
+
+The most common way to use the operator, **!**, is by checking if one value does not equal another.
+```{r}
+glucose != 99
+```
+
+**!** will reverse any test. For example, what will `!FALSE` return? 
+```{r}
+!FALSE
+```
+
+
+**Note** Unlike SAS, you cannot do multiple Boolean operators on one variable. 
+
+For example, if you wanted to find glucose levels that are between 100 and 200...
+
+In SAS --> 100 <= glucose <= 200
+In R   --> 100 <= glucose & glucose <= 200
+
+### %in%
+When you want to test for multiple options, you could use the `|` operator.
+```{r}
+#| include: false
+domains <- c('DM', 'CM', 'AE', 'LB', 'VS', 'SV', 'SE', 'TA', 'TV', 'TE')
+```
+
+```{r}
+domains == "TA" | domains == "TV" | domains == "TE"
+```
+
+Doing this can be cumbersome. Instead we can use R's `%in%` operator. 
+
+```{r}
+domains %in% c("TA", "TV", "TE")
+```
+
+
+This is the equivalent to using `in` in SAS (i.e. PARAMCD in ("WEIGHT" "HEIGHT" "BMI")).
+
+## Exercises
+Open up the "Syneos Health R Training - Assigning Values Exercises" R script and complete exercises 11 through 15.
+
+
+# Overview
+In this tutorial, we were introduced to three basic concepts in R: assigning values, logical operators, and Boolean operators. When we assign values, we are creating new variables, or objects in R. R stores these objects so we can use them for later use. Logical operators help us to find data that is relevant. We can use Boolean operators to help link multiple logical operators together.
+
+## Summary
+1.  We assign objects in R using `<-`
+2.  Once we assign multiple values, we can use them together
+3.  R takes the most recent assignment of an object to use
+4.  Logical tests include operators like `<`, `<=`, `>`, `>=`, `==`, `!=`
+5.  Boolean operators include `|` (or), `&` (and), `!` (not), and `%in%` (in)
+
+## Q&A
+If you have any questions, comments or concerns, please reach out to the R Standards Team at [DL_FSO_R_Team@syneoshealth.com](mailto:DL_FSO_R_Team@syneoshealth.com).
